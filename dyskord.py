@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix='$')
 # --- MEM ---
 @bot.command(brief="Generator memów typu górny podpis + dolny podpis")
 async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=""):
-    import python_memes.memlib
+    import python_memes.memlib_v2
     import urllib.request
     import os
 
@@ -28,7 +28,10 @@ async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=
     else:
         await ctx.message.attachments[0].save(imgpath)
 
-    python_memes.memlib.MemPodpisany(img_path=imgpath, top_text=podpis_gorny, bottom_text=podpis_dolny, output_path=(imgpath + ".jpg"))
+    mem = python_memes.memlib_v2.Mem()
+    mem.load_image(imgpath)
+    mem.add_caption(top_text=podpis_gorny, bottom_text=podpis_dolny)
+    mem.save_image(imgpath + ".jpg")
 
     await ctx.send(file=discord.File(imgpath + ".jpg"))
 
@@ -49,7 +52,7 @@ async def mem_error(ctx, error):
 @bot.command(brief="Generator memów typu Drakepost")
 async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
     if podpis_gorny and podpis_dolny:
-        import python_memes.memlib
+        import python_memes.memlib_v2
         import os
 
         podpis_dolny = podpis_dolny.upper()
@@ -57,7 +60,9 @@ async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
 
         outputpath = "temp/" + str(ctx.message.id) + ".jpg"
 
-        python_memes.memlib.MemDrake(top_text=podpis_gorny, bottom_text=podpis_dolny, output_path=outputpath)
+        mem = python_memes.memlib_v2.Mem()
+        mem.make_drake(top_text=podpis_gorny, bottom_text=podpis_dolny)
+        mem.save_image(outputpath)
 
         await ctx.send(file=discord.File(outputpath))
         os.remove(outputpath)

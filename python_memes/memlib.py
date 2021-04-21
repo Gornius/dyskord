@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-# Todo:
-# * Graphic from URL
-# * Make class
-
 # Imports
 from wand.image import Image
 from wand.display import display
@@ -12,109 +8,92 @@ import os
 import argparse
 
 class Mem:
-    def __init__(self, *, img_path: str, output_path: str="", font_path: str=""):
-        # Get script directory
-        self.script_dir      = os.path.dirname(__file__)
-
-        self.img_path        = self.parse_path_cwd(img_path, "input.png")
-        self.output_path     = self.parse_path_cwd(output_path, "output.png")
-        self.font_path       = self.parse_path(font_path, "LeagueGothic-Regular.otf")
-
-    def parse_path(self, path, default):
-        if path:
-            return self.script_dir + "/" + path
-        else:
-            return self.script_dir + "/" + default
-
-    def parse_path_cwd(self, path, default):
-        if path:
-            return os.getcwd() + "/" + path
-        else:
-            return os.getcwd() + "/" + default
-
-class MemDrake(Mem):
-    def __init__(self, *, output_path: str="", font_path: str="", top_text: str="", bottom_text: str=""):
-        super().__init__(img_path="", output_path=output_path, font_path=font_path)
-        self.img_path        = super().parse_path("", "drake_template.jpg")
-        self.top_text        = top_text
-        self.bottom_text     = bottom_text
-
-        self.make_image()
+    def __init__(self, *, font_path: str=""):
+        self.font_path       = self.parse_default_path(font_path, "LeagueGothic-Regular.otf") 
+        self.wand_image      = None
     
-    def make_image(self):
-        with Image(filename=self.img_path) as img:
-            img.font = Font(path=self.font_path, color='black', antialias=True)
-            img.caption(
-                self.top_text,
-                gravity='center',
-                left=505,
-                top=12,
-                width=460,
-                height=360
-            )
-            img.caption(
-                self.bottom_text,
-                gravity='center',
-                left=505,
-                top=400,
-                width=460,
-                height=360
-            )
-            img.save(filename=self.output_path)
+    def parse_default_path(self, custom: str, default: str):
+        if custom:
+            return os.getcwd() + "/" + custom
+        else:
+            return os.path.dirname(__file__) + "/" + default
 
-        
+    def load_image(self, img_path: str):
+        with Image(filename=os.getcwd() + "/" + img_path) as original_image:
+            img = original_image.clone()
+            self.wand_image = img
 
+    def save_image(self, output_path: str):
+        self.wand_image.save(filename=os.getcwd() + "/" + output_path)
+        self.wand_image.close()
+
+    def make_drake(self, top_text: str="", bottom_text: str=""):
+        img = Image(filename=os.path.dirname(__file__) + "/" + "drake_template.jpg")
+        img.font = Font(path=self.font_path, color='black', antialias=True)
+        img.caption(
+            top_text,
+            gravity='center',
+            left=505,
+            top=12,
+            width=460,
+            height=360
+        )
+        img.caption(
+            bottom_text,
+            gravity='center',
+            left=505,
+            top=400,
+            width=460,
+            height=360
+        )
+        if self.wand_image:
+            self.wand_image.close()
+        self.wand_image = img
     
-class MemPodpisany(Mem):
-    def __init__(self, *, img_path: str, output_path: str="", font_path: str="", top_text: str="", bottom_text: str=""):
-        super().__init__(img_path=img_path, output_path=output_path, font_path=font_path)
-        self.top_text        = top_text
-        self.bottom_text     = bottom_text
+    def add_caption(self, top_text: str="", bottom_text: str=""):
+        img = self.wand_image
+        # Bar height
+        barHeight = min(int(0.2 * img.height), int(0.2 * img.width))
 
-        self.make_image()
+        # Height to add to image to include bars
+        heightToAdd = 0
+        if top_text:
+            heightToAdd += barHeight
+        if bottom_text:
+            heightToAdd += barHeight
 
-    def make_image(self):
-        with Image(filename=self.img_path) as img:
-            # Bar height
-            barHeight = min(int(0.2 * img.height), int(0.2 * img.width))
+        with Image(width=img.width, height=img.height+heightToAdd, background='black') as canvas:
+            # Set used font
+            canvas.font = Font(path=self.font_path, color='white', antialias=True)
 
-            # Height to add to image to include bars
-            heightToAdd = 0
-            if self.top_text != "":
-                heightToAdd += barHeight
-            if self.bottom_text != "":
-                heightToAdd += barHeight
+            # Paste original image (separate cases whether top text is or is not included)
+            if top_text:
+                canvas.composite(img, 0, barHeight)
+            else:
+                canvas.composite(img, 0, 0)
 
-            with Image(width=img.width, height=img.height+heightToAdd, background='black') as canvas:
-                # Set used font
-                canvas.font = Font(path=self.font_path, color='white', antialias=True)
+            # Render top text
+            if top_text:
+                canvas.caption(top_text,
+                        gravity='center',
+                        left=0,
+                        top=0,
+                        width=canvas.width,
+                        height=barHeight)
 
-                # Paste original image (separate cases whether top text is or is not included)
-                if self.top_text != "":
-                    canvas.composite(img, 0, barHeight)
+            # Render bottom text
+            if bottom_text:
+                # Calculate position of bottom bar
+                if top_text:
+                    BottomBarStartY = img.height + barHeight
                 else:
-                    canvas.composite(img, 0, 0)
-
-                # Render top text
-                if self.top_text != "":
-                    canvas.caption(self.top_text,
-                            gravity='center',
-                            left=0,
-                            top=0,
-                            width=canvas.width,
-                            height=barHeight)
-
-                # Render bottom text
-                if self.bottom_text != "":
-                    # Calculate position of bottom bar
-                    if self.top_text != "":
-                        BottomBarStartY = img.height + barHeight
-                    else:
-                        BottomBarStartY = img.height
-                    canvas.caption(self.bottom_text,
-                            gravity='center',
-                            left=0,
-                            top=BottomBarStartY,
-                            width=canvas.width,
-                            height=barHeight)
-                canvas.save(filename=self.output_path)
+                    BottomBarStartY = img.height
+                canvas.caption(bottom_text,
+                        gravity='center',
+                        left=0,
+                        top=BottomBarStartY,
+                        width=canvas.width,
+                        height=barHeight)
+            if self.wand_image:
+                self.wand_image.close()
+            self.wand_image = canvas.clone()
