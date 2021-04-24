@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix='$')
 # --- MEM ---
 @bot.command(brief="Generator memów typu górny podpis + dolny podpis")
 async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=""):
-    import python_memes.memlib_v2
+    import python_memes.memlib
     import urllib.request
     import os
 
@@ -28,7 +28,7 @@ async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=
     else:
         await ctx.message.attachments[0].save(imgpath)
 
-    mem = python_memes.memlib_v2.Mem()
+    mem = python_memes.memlib.Mem()
     mem.load_image(imgpath)
     mem.add_caption(top_text=podpis_gorny, bottom_text=podpis_dolny)
     mem.save_image(imgpath + ".jpg")
@@ -52,7 +52,7 @@ async def mem_error(ctx, error):
 @bot.command(brief="Generator memów typu Drakepost")
 async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
     if podpis_gorny and podpis_dolny:
-        import python_memes.memlib_v2
+        import python_memes.memlib
         import os
 
         podpis_dolny = podpis_dolny.upper()
@@ -60,7 +60,7 @@ async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
 
         outputpath = "temp/" + str(ctx.message.id) + ".jpg"
 
-        mem = python_memes.memlib_v2.Mem()
+        mem = python_memes.memlib.Mem()
         mem.make_drake(top_text=podpis_gorny, bottom_text=podpis_dolny)
         mem.save_image(outputpath)
 
@@ -68,13 +68,37 @@ async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
         os.remove(outputpath)
     else:
         await ctx.send_help(drake)
-        
 
-@drake.error
-async def drake_error(ctx, error):
+
+
+# --- EXPANDING BRAIN ---
+@bot.command(brief="Generator memów typu expanding brain (max 6 podpisów)")
+async def brain(ctx, *args):
+    if len(args) < 1:
+        raise Exception("You can't make image with 0 args")
+
+    import python_memes.memlib
+    import os
+
+    outputpath = "temp/" + str(ctx.message.id) + ".jpg"
+
+    # Make list of strings and upper them
+    strings = []
+    for string in args:
+        strings.append(str(string).upper())
+
+    mem = python_memes.memlib.Mem()
+    mem.make_expanding_brain(strings)
+    mem.save_image(outputpath)
+
+    await ctx.send(file=discord.File(outputpath))
+    os.remove(outputpath)
+
+@brain.error
+async def bot_error(ctx, error):
     import os
     os.remove("temp/" + str(ctx.message.id) + ".jpg")
-    await ctx.send_help(drake)
+    await ctx.send_help(brain)
     raise(error)
 
 
