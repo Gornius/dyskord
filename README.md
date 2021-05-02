@@ -2,7 +2,7 @@
 
 Requirements: `discord, wand`
 
-Dependencies: Debian: `libmagickwand-dev`, RHEL: `ImageMagick-devel` 
+Dependencies: Debian: `libmagickwand-dev`, RHEL: `ImageMagick-devel`, Windows: `Imagemagick dynamic`
 
 ## Usage
 ```dyskord.py -t {DISCORD API TOKEN}```
