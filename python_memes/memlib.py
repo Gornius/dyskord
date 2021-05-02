@@ -14,17 +14,17 @@ class Mem:
     
     def parse_default_path(self, custom: str, default: str):
         if custom:
-            return os.getcwd() + "/" + custom
+            return os.path.join(os.getcwd(), custom)
         else:
-            return os.path.dirname(__file__) + "/" + default
+            return os.path.join(os.path.dirname(__file__), default)
 
     def load_image(self, img_path: str):
-        with Image(filename=os.getcwd() + "/" + img_path) as original_image:
+        with Image(filename=os.path.join(os.getcwd(), img_path)) as original_image:
             img = original_image.clone()
             self.wand_image = img
 
     def save_image(self, output_path: str):
-        self.wand_image.save(filename=os.getcwd() + "/" + output_path)
+        self.wand_image.save(filename=os.path.join(os.getcwd(), output_path))
         self.wand_image.close()
 
     def close_image(self):
@@ -32,7 +32,7 @@ class Mem:
             self.wand_image.close()
 
     def make_drake(self, top_text: str="", bottom_text: str=""):
-        img = Image(filename=os.path.dirname(__file__) + "/" + "drake_template.jpg")
+        img = Image(filename=os.path.join(os.path.dirname(__file__), "drake_template.jpg"))
         img.font = Font(path=self.font_path, color='black', antialias=True)
         img.caption(
             top_text,
@@ -59,7 +59,7 @@ class Mem:
             raise IndexError("Too many arguments passed, max is 6.")
 
         # Load meme template
-        img = Image(filename=os.path.dirname(__file__) + "/" + "expanding_meme_template.jpg")
+        img = Image(filename=os.path.join(os.path.dirname(__file__), "expanding_meme_template.jpg"))
         img.font = Font(path=self.font_path, color='black', antialias=True)
 
         # Calculate final image height

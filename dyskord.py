@@ -2,9 +2,10 @@
 from discord.ext import commands
 import discord
 import random
+import os
+import argparse
 
 # Parse token from CLI argument
-import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--token', '-t', help='Discord API Token')
 args = parser.parse_args()
@@ -12,17 +13,19 @@ botToken = args.token
 
 bot = commands.Bot(command_prefix='$')
 
+# Make sure temp folder exists
+os.mkdir("temp")
+
 # --- MEM ---
 @bot.command(brief="Generator memów typu górny podpis + dolny podpis")
 async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=""):
     import python_memes.memlib
     import urllib.request
-    import os
 
     podpis_dolny = podpis_dolny.upper()
     podpis_gorny = podpis_gorny.upper()
 
-    imgpath = "temp/" + str(ctx.message.id)
+    imgpath = os.path.join("temp", str(ctx.message.id))
     if url_obrazka:
         urllib.request.urlretrieve(url_obrazka, imgpath)
     else:
@@ -41,9 +44,8 @@ async def mem(ctx, podpis_gorny: str="", podpis_dolny: str="", url_obrazka: str=
 @mem.error
 async def mem_error(ctx, error):
     await ctx.send_help(mem) 
-    import os
-    os.remove("temp/" + str(ctx.message.id))
-    os.remove("temp/" + str(ctx.message.id) + ".jpg")
+    os.remove(os.path.join("temp", str(ctx.message.id)))
+    os.remove(os.path.join("temp", str(ctx.message.id) + ".jpg"))
     raise(error)
 
 
@@ -53,12 +55,11 @@ async def mem_error(ctx, error):
 async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
     if podpis_gorny and podpis_dolny:
         import python_memes.memlib
-        import os
 
         podpis_dolny = podpis_dolny.upper()
         podpis_gorny = podpis_gorny.upper()
 
-        outputpath = "temp/" + str(ctx.message.id) + ".jpg"
+        outputpath = os.path.join("temp", str(ctx.message.id) + ".jpg")
 
         mem = python_memes.memlib.Mem()
         mem.make_drake(top_text=podpis_gorny, bottom_text=podpis_dolny)
@@ -78,9 +79,8 @@ async def brain(ctx, *args):
         raise Exception("You can't make image with 0 args")
 
     import python_memes.memlib
-    import os
 
-    outputpath = "temp/" + str(ctx.message.id) + ".jpg"
+    outputpath = os.path.join("temp", str(ctx.message.id) + ".jpg")
 
     # Make list of strings and upper them
     strings = []
@@ -96,8 +96,7 @@ async def brain(ctx, *args):
 
 @brain.error
 async def bot_error(ctx, error):
-    import os
-    os.remove("temp/" + str(ctx.message.id) + ".jpg")
+    os.remove(os.path.join("temp", str(ctx.message.id) + ".jpg"))
     await ctx.send_help(brain)
     raise(error)
 
