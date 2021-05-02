@@ -66,7 +66,7 @@ class Mem:
         # Add text on the left
         img.caption(
             left_text,
-            gravity='center',
+            gravity='north',
             left=5,
             top=181,
             width=254,
@@ -76,7 +76,7 @@ class Mem:
         # Add text on the right
         img.caption(
             right_text,
-            gravity='center',
+            gravity='north',
             left=322,
             top=181,
             width=254,
