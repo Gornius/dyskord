@@ -14,7 +14,10 @@ botToken = args.token
 bot = commands.Bot(command_prefix='$')
 
 # Make sure temp folder exists
-os.mkdir("temp")
+try:
+    os.mkdir("temp")
+except:
+    pass
 
 # --- MEM ---
 @bot.command(brief="Generator memów typu górny podpis + dolny podpis")
@@ -70,6 +73,13 @@ async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
     else:
         await ctx.send_help(drake)
 
+@drake.error
+async def drake_error(ctx, error):
+    await ctx.send_help(drake) 
+    os.remove(os.path.join("temp", str(ctx.message.id)))
+    os.remove(os.path.join("temp", str(ctx.message.id) + ".jpg"))
+    raise(error)
+
 
 
 # --- EXPANDING BRAIN ---
@@ -95,7 +105,7 @@ async def brain(ctx, *args):
     os.remove(outputpath)
 
 @brain.error
-async def bot_error(ctx, error):
+async def brain_error(ctx, error):
     os.remove(os.path.join("temp", str(ctx.message.id) + ".jpg"))
     await ctx.send_help(brain)
     raise(error)
