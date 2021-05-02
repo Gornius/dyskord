@@ -55,6 +55,37 @@ class Mem:
         self.close_image()
         self.wand_image = img
 
+    def make_trade_offer(self, left_text: str="", right_text: str=""):
+        # Load image, then work on its clone
+        self.load_image(os.path.join(os.path.dirname(__file__), "trade_template.jpg"))
+        img = self.wand_image.clone()
+
+        # Set font
+        img.font = Font(path=self.font_path, color='white', antialias=True, stroke_width=2, stroke_color='black') 
+
+        # Add text on the left
+        img.caption(
+            left_text,
+            gravity='center',
+            left=5,
+            top=181,
+            width=254,
+            height=171
+        )
+
+        # Add text on the right
+        img.caption(
+            right_text,
+            gravity='center',
+            left=322,
+            top=181,
+            width=254,
+            height=171
+        )
+        # Close current object's image and load current as new one
+        self.close_image()
+        self.wand_image=img
+
     def make_expanding_brain(self, strings):
         if len(strings) > 6:
             raise IndexError("Too many arguments passed, max is 6.")

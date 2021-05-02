@@ -73,9 +73,30 @@ async def drake(ctx, podpis_gorny: str="", podpis_dolny: str=""):
     else:
         await ctx.send_help(drake)
 
+
+# --- TRADE OFFER ---
+@bot.command(brief="Mem typu \"Trade Offer\"")
+async def tradeoffer(ctx, i_receive: str="", you_receive: str=""):
+    if i_receive and you_receive:
+        import python_memes.memlib
+
+        i_receive = i_receive.upper()
+        you_receive = you_receive.upper()
+
+        outputpath = os.path.join("temp", str(ctx.message.id) + ".jpg")
+
+        mem = python_memes.memlib.Mem()
+        mem.make_trade_offer(left_text=i_receive, right_text=you_receive)
+        mem.save_image(outputpath)
+
+        await ctx.send(file=discord.File(outputpath))
+        os.remove(outputpath)
+    else:
+        await ctx.send_help(tradeoffer)
+
 @drake.error
-async def drake_error(ctx, error):
-    await ctx.send_help(drake) 
+async def tradeoffer_error(ctx, error):
+    await ctx.send_help(tradeoffer) 
     os.remove(os.path.join("temp", str(ctx.message.id)))
     os.remove(os.path.join("temp", str(ctx.message.id) + ".jpg"))
     raise(error)
