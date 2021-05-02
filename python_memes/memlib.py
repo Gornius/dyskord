@@ -19,9 +19,10 @@ class Mem:
             return os.path.join(os.path.dirname(__file__), default)
 
     def load_image(self, img_path: str):
-        with Image(filename=os.path.join(os.getcwd(), img_path)) as original_image:
-            img = original_image.clone()
-            self.wand_image = img
+        if self.wand_image:
+            self.wand_image.close()
+        with Image(filename=img_path) as original_image:
+            self.wand_image = original_image.clone()
 
     def save_image(self, output_path: str):
         self.wand_image.save(filename=os.path.join(os.getcwd(), output_path))
@@ -32,7 +33,8 @@ class Mem:
             self.wand_image.close()
 
     def make_drake(self, top_text: str="", bottom_text: str=""):
-        img = Image(filename=os.path.join(os.path.dirname(__file__), "drake_template.jpg"))
+        self.load_image(os.path.join(os.path.dirname(__file__), "drake_template.jpg"))
+        img = self.wand_image.clone()
         img.font = Font(path=self.font_path, color='black', antialias=True)
         img.caption(
             top_text,
@@ -50,8 +52,7 @@ class Mem:
             width=460,
             height=360
         )
-        if self.wand_image:
-            self.wand_image.close()
+        self.close_image()
         self.wand_image = img
 
     def make_expanding_brain(self, strings):
@@ -59,7 +60,8 @@ class Mem:
             raise IndexError("Too many arguments passed, max is 6.")
 
         # Load meme template
-        img = Image(filename=os.path.join(os.path.dirname(__file__), "expanding_meme_template.jpg"))
+        self.load_image(os.path.join(os.path.dirname(__file__), "expanding_meme_template.jpg"))
+        img = self.wand_image.clone()
         img.font = Font(path=self.font_path, color='black', antialias=True)
 
         # Calculate final image height
@@ -95,7 +97,7 @@ class Mem:
             self.wand_image = canvas.clone()
     
     def add_caption(self, top_text: str="", bottom_text: str=""):
-        img = self.wand_image
+        img = self.wand_image.clone()
         # Bar height
         barHeight = min(int(0.2 * img.height), int(0.2 * img.width))
 
@@ -138,6 +140,5 @@ class Mem:
                         top=BottomBarStartY,
                         width=canvas.width,
                         height=barHeight)
-            if self.wand_image:
-                self.wand_image.close()
+            self.close_image()
             self.wand_image = canvas.clone()
