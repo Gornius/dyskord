@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
+from genericpath import isfile
 from discord.ext import commands
 import discord
 import random
 import os
 import argparse
 
-# Parse token from CLI argument
-parser = argparse.ArgumentParser()
-parser.add_argument('--token', '-t', help='Discord API Token')
-args = parser.parse_args()
-botToken = args.token
+def getToken():
+    # Parse token from CLI argument
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--token', '-t', help='Discord API Token')
+    args = parser.parse_args()
+    botToken = args.token
+
+    if botToken:
+        return botToken
+    elif os.path.isfile('token.txt'):
+        with open('token.txt') as f:
+            return f.read();
 
 bot = commands.Bot(command_prefix='$')
 
@@ -213,4 +221,4 @@ async def on_ready():
     await bot.change_presence(activity=game)
     print('Zalogowano pomyślnie jako {0.user}'.format(bot))
 
-bot.run(botToken)
+bot.run(getToken())
